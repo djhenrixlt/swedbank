@@ -1,56 +1,57 @@
 package com.example.swedbankApi.user.Controller;
 
 import com.example.swedbankApi.user.dto.UserDto;
-import com.example.swedbankApi.user.repo.UserRepo;
-import lombok.AllArgsConstructor;
+import com.example.swedbankApi.user.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
-public class userController {
+@RequestMapping("/api/v1.0")
+public class UserController {
 
-    UserRepo userRepo;
 
-    @PostMapping
-    UserDto login(String username,String email, String password) {
-        Optional<UserDto> user = userRepo.findByUserName(username);
-        return user.get();
+    private final UserService userService;
 
+    @PostMapping("/login")
+    public ResponseEntity<UserDto> login( String username, String password) {
+           UserDto userDto = userService.login(username, password);
+           return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
+
+
 
     @PostMapping("/api/signup")
     public ResponseEntity<UserDto> addUser(@RequestBody  UserDto userDto) throws Exception {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userRepo.save(userDto));
+                .body(userService.createUser(userDto));
     }
 
     @GetMapping("/api/users")
     public List<UserDto> getAllUsers() {
-        return userRepo.findAll();
+        return userService.getAllUsers();
     }
 
     @GetMapping("/api/users/{id}")
     public UserDto finUserById(@PathVariable long id) {
-        return userRepo.getReferenceById(id);
+        return userService.getUserById(id);
     }
 
 
     @PostMapping("/api/users/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public UserDto updateUser(@RequestBody  UserDto userDto) throws Exception {
-        return userRepo.save(userDto);
+        return userService.updateUser(userDto.getId(), userDto);
     }
 
     @DeleteMapping("/api/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable long id) {
-        Optional<UserDto> user = userRepo.findById(id);
-        userRepo.delete(user.get());
+        userService.deleteUser(id);
     }
 
 }
