@@ -1,16 +1,23 @@
 package com.example.swedbankApi.user.entity;
 
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
-@AllArgsConstructor
+
+@Data
+@NoArgsConstructor
+@Entity
+@Table(name="users")
 public class UserEntity {
 
-    private long id;
-    private String name;
-    private String lastName;
-    private String nickName;
-    private String password;
-    private String email;
-    private boolean isAdmin = true;
-    private boolean isActive = true;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+   private long id;
+   private String name;
+   private String lastName;
+   private String nickName;
+   private String password;
+   private String email;
+   private boolean admin;
+   private boolean active;
 }

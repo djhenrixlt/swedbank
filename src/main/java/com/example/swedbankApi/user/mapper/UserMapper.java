@@ -3,16 +3,14 @@ package com.example.swedbankApi.user.mapper;
 
 import com.example.swedbankApi.user.dto.UserDto;
 import com.example.swedbankApi.user.entity.UserEntity;
+import org.mapstruct.InjectionStrategy;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
+import org.mapstruct.MappingConstants;
 
-@Mapper
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface UserMapper {
 
+    UserDto toDto(UserEntity userEntity);
 
-    UserMapper userMapper = Mappers.getMapper(UserMapper.class);
-
-    UserDto userToUserDto(UserEntity userEntity);
-
-    UserEntity userDtoToUserEntity(UserDto userDto);
+    UserEntity toEntity(UserDto userDto);
 }

@@ -9,12 +9,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1.0")
 public class UserController {
-
-
 
     private final UserService userService;
 
@@ -24,32 +23,30 @@ public class UserController {
            return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
-
-
-    @PostMapping("/api/signup")
+    @PostMapping("/signup")
     public ResponseEntity<UserDto> addUser(@RequestBody  UserDto userDto) throws Exception {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.createUser(userDto));
     }
 
-    @GetMapping("/api/users")
+    @GetMapping("/users")
     public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
 
-    @GetMapping("/api/users/{id}")
+    @GetMapping("/users/{id}")
     public UserDto finUserById(@PathVariable long id) {
         return userService.getUserById(id);
     }
 
 
-    @PostMapping("/api/users/{id}")
+    @PostMapping("/users/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public UserDto updateUser(@RequestBody  UserDto userDto) throws Exception {
-        return userService.updateUser(userDto.getId(), userDto);
+    public UserDto updateUser( @PathVariable Long id, @RequestBody  UserDto userDto) throws Exception {
+        return userService.updateUser(id, userDto);
     }
 
-    @DeleteMapping("/api/users/{id}")
+    @DeleteMapping("/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable long id) {
         userService.deleteUser(id);

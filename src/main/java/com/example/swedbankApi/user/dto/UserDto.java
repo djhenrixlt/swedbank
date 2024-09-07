@@ -1,20 +1,20 @@
 package com.example.swedbankApi.user.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@Builder
 @AllArgsConstructor
 @Getter
 @Setter
+@Value
 public class UserDto {
 
-    private long id;
-    private String name;
-    private String lastName;
-    private String nickName;
-    private String password;
-    private String email;
-    private boolean isAdmin = true;
-    private boolean isActive = true;
+    long id;
+    String name;
+    String lastName;
+    String nickName;
+    String password;
+    String email;
+    boolean admin;
+    boolean active;
 }
