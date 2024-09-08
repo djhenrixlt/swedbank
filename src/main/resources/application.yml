@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    username: user
+    password: password
+    url: jdbc:postgresql://localhost:5432/user
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate.order_by.default_null_ordering: last
