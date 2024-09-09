@@ -22,10 +22,8 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
 class UserControllerTest {
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -67,7 +64,7 @@ class UserControllerTest {
                         .param("username", "johndoe")
                         .param("password", "password123"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("john"))
+                .andExpect(jsonPath("$.name").value("John"))
                 .andExpect(jsonPath("$.email").value("john.doe@example.com"));
     }
 
