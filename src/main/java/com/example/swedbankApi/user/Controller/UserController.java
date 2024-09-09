@@ -5,6 +5,7 @@ import com.example.swedbankApi.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,22 +19,24 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<UserDto> login( String username, String password) {
-           UserDto userDto = userService.login(username, password);
-           return new ResponseEntity<>(userDto, HttpStatus.OK);
+    public ResponseEntity<UserDto> login( @RequestParam String emailOrNickName,@RequestParam String password) {
+        return new ResponseEntity<>(
+                userService
+                        .login(emailOrNickName, password), HttpStatus.OK);
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDto> addUser(@RequestBody  UserDto userDto) throws Exception {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userService.createUser(userDto));
+    public ResponseEntity<UserDto> registerUser(@RequestBody UserDto userDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userDto));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/users")
     public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN') or #principal.name == @userService.getUserById(#id).getEmail()")
     @GetMapping("/users/{id}")
     public UserDto finUserById(@PathVariable long id) {
         return userService.getUserById(id);

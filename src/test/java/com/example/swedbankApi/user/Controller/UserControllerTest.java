@@ -54,8 +54,8 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-        userDto = TestUtils.craateUserDto();
-        userEntity = TestUtils.craateUserEntity();
+        userDto = TestUtils.craeateUserDto();
+        userEntity = TestUtils.createUserEntity();
     }
 
     @Test

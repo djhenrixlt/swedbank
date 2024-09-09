@@ -8,7 +8,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class TestUtils {
 
-    public UserDto craateUserDto(){
+    public UserDto craeateUserDto(){
         return UserDto.builder()
                 .name("name1")
                 .lastName("lastName1")
@@ -16,12 +16,11 @@ public class TestUtils {
                 .email("email1")
                 .id(1)
                 .password("password")
-                .admin(true)
                 .active(true)
                 .build();
     }
 
-    public UserEntity craateUserEntity(){
+    public UserEntity createUserEntity(){
          UserEntity userEntity = new UserEntity();
                 userEntity.setName("name1");
                 userEntity.setLastName("lastName1");
@@ -29,7 +28,6 @@ public class TestUtils {
                 userEntity.setEmail("email1");
                 userEntity.setId(1);
                 userEntity.setPassword("password");
-                userEntity.setAdmin(true);
                 userEntity.setActive(true);
         return userEntity;
     }

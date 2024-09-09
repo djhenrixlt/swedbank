@@ -1,35 +1,55 @@
 package com.example.swedbankApi.user.service;
 
 import com.example.swedbankApi.user.dto.UserDto;
+import com.example.swedbankApi.user.entity.RoleEntity;
 import com.example.swedbankApi.user.entity.UserEntity;
 import com.example.swedbankApi.user.mapper.UserMapper;
 import com.example.swedbankApi.user.repo.UserRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
 
  private final UserRepo userRepo;
+ private final RoleService roleService;
  private final UserMapper userMapper;
+ private  PasswordEncoder passwordEncoder;
+
 
 
 
     @Override
-    public UserDto login(String username, String password) {
-        return userMapper.toDto( userRepo
-                .findByNickName(username)
-                .orElseThrow(()-> new NoSuchElementException("User not found")));
+    public UserDto login(String emailOrNickName, String password) {
+        UserEntity user = userRepo.findByNickName(emailOrNickName)
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalArgumentException("Invalid credentials");
+        }
+
+        return userMapper.toDto(user);
     }
 
     public UserDto createUser(final UserDto userDto)throws EntityNotFoundException {
-       final UserEntity user = userMapper.toEntity(userDto);
-     return userMapper.toDto(userRepo.save(user));
+        String encodedPassword = passwordEncoder.encode(userDto.getPassword());
+
+        UserEntity user = userMapper.toEntity(userDto);
+        user.setPassword(encodedPassword);
+        user.setActive(true);
+
+        Set<RoleEntity> roles = roleService.getRolesFromNames(userDto.getRoles());
+        user.setRoles(roles);
+
+        UserEntity savedUser = userRepo.save(user);
+        return userMapper.toDto(savedUser);
  }
 
 

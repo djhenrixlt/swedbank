@@ -1,7 +1,10 @@
 package com.example.swedbankApi.user.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Set;
 
 
 @Data
@@ -29,9 +32,14 @@ public class UserEntity {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "is_admin")
-    private boolean admin;
-
     @Column(name = "is_active")
     private boolean active;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<RoleEntity> roles;
 }

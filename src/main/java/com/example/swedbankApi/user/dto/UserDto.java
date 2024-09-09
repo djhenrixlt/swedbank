@@ -2,7 +2,9 @@ package com.example.swedbankApi.user.dto;
 
 import lombok.*;
 
-@Builder
+import java.util.Set;
+
+@Builder(toBuilder = true)
 @AllArgsConstructor
 @Getter
 @Setter
@@ -15,6 +17,6 @@ public class UserDto {
     String nickName;
     String password;
     String email;
-    boolean admin;
     boolean active;
+    Set<String> roles;
 }
