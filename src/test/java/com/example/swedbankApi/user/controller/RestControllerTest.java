@@ -1,4 +1,4 @@
-package com.example.swedbankApi.user.Controller;
+package com.example.swedbankApi.user.controller;
 
 import com.example.swedbankApi.TestUtils;
 import com.example.swedbankApi.user.dto.UserDto;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"classpath:sql/user_data.sql"})
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-class UserControllerTest {
+class RestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 

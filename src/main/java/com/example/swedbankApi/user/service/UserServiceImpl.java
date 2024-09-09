@@ -21,7 +21,7 @@ public class UserServiceImpl implements UserService {
  private final UserRepo userRepo;
  private final RoleService roleService;
  private final UserMapper userMapper;
- private  PasswordEncoder passwordEncoder;
+ private final PasswordEncoder passwordEncoder;
 
 
 

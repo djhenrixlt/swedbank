@@ -1,4 +1,4 @@
-package com.example.swedbankApi.user.Controller;
+package com.example.swedbankApi.user.controller;
 
 import com.example.swedbankApi.user.dto.UserDto;
 import com.example.swedbankApi.user.service.UserService;
@@ -12,9 +12,9 @@ import java.util.List;
 
 
 @RequiredArgsConstructor
-@RestController
+@org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1.0")
-public class UserController {
+public class RestController {
 
     private final UserService userService;
 

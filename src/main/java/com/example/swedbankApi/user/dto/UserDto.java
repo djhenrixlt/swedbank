@@ -5,18 +5,18 @@ import lombok.*;
 import java.util.Set;
 
 @Builder(toBuilder = true)
-@AllArgsConstructor
 @Getter
 @Setter
-@Value
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDto {
 
-    long id;
-    String name;
-    String lastName;
-    String nickName;
-    String password;
-    String email;
-    boolean active;
-    Set<String> roles;
+   private long id;
+   private String name;
+   private String lastName;
+   private String nickName;
+   private String password;
+   private String email;
+   private boolean active;
+   private Set<String> roles;
 }

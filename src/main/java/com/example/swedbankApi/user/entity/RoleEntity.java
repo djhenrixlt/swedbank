@@ -2,11 +2,13 @@ package com.example.swedbankApi.user.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.Set;
 
 @Data
+@EqualsAndHashCode(exclude = "users")
 @NoArgsConstructor
 @Entity
 @Table(name = "roles")
