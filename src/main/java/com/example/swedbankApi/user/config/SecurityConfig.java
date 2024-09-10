@@ -24,12 +24,17 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
 
     @Bean
+    public static PasswordEncoder passwordEncoder(){
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/v1.0/signup", "/api/v1.0/login").permitAll()
-                        .requestMatchers("/index", "/register").permitAll()
+                        .requestMatchers("/index", "/register", "/register/save").permitAll()
                         .requestMatchers("/users").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -48,10 +53,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean
-    public static PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
+
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {

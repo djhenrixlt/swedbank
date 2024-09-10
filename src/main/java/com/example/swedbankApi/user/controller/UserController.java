@@ -3,7 +3,7 @@ package com.example.swedbankApi.user.controller;
 import com.example.swedbankApi.user.dto.UserDto;
 import com.example.swedbankApi.user.service.UserService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.List;
 
-@RequiredArgsConstructor
 @Controller
+@AllArgsConstructor
 public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/index")
+    @GetMapping()
     public String home() {
         return "index";
     }
@@ -32,27 +32,20 @@ public class UserController {
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
         UserDto user = new UserDto();
-        model.addAttribute("user", user);
+        model.addAttribute("userDto", user);
         return "register";
     }
 
     @PostMapping("/register/save")
-    public String registration(@Valid @ModelAttribute("user") UserDto userDto,
+    public String registration( @ModelAttribute("userDto") @Valid UserDto userDto,
                                BindingResult result,
                                Model model) {
-        UserDto existingUser = userService.getUserByUsername(userDto.getNickName());
-
-        if (existingUser != null && existingUser.getEmail() != null && !existingUser.getEmail().isEmpty()) {
-            result.rejectValue("email", null,
-                    "There is already an account registered with the same email");
-        }
-
         if (result.hasErrors()) {
             model.addAttribute("user", userDto);
             return "/register";
         }
 
-        userService.saveUser(userDto);
+        userService.createUser(userDto);
         return "redirect:/register?success";
 
     }

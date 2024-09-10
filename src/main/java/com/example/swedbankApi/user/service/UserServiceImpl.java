@@ -41,6 +41,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto createUser(final UserDto userDto) throws EntityNotFoundException {
+
         String encodedPassword = passwordEncoder.encode(userDto.getPassword());
         UserEntity user = userMapper.toEntity(userDto);
         user.setPassword(encodedPassword);
@@ -56,20 +57,7 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    public void saveUser(UserDto userDto) throws EntityNotFoundException {
-        String encodedPassword = passwordEncoder.encode(userDto.getPassword());
 
-        UserEntity user = userMapper.toEntity(userDto);
-        user.setPassword(encodedPassword);
-        user.setActive(true);
-        Optional<RoleEntity> role = roleRepo.findById(1L);
-        if (role.isEmpty()){
-            throw new NoSuchElementException("");
-        }
-        user.setRoles(Set.of(role.get()));
-
-        userRepo.save(user);
-    }
 
     public List<UserDto> getAllUsers() {
         return userRepo.findAll()

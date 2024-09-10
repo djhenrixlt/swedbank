@@ -42,9 +42,9 @@ public class RestController {
         return userService.getUserById(id);
     }
 
-    @PostMapping("/users/{id}")
+    @PutMapping("/users/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public UserDto updateUser(@PathVariable Long id, @RequestBody UserDto userDto) throws Exception {
+    public UserDto updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
         return userService.updateUser(id, userDto);
     }
 
