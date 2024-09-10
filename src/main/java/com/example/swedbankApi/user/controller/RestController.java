@@ -13,10 +13,14 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @org.springframework.web.bind.annotation.RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/v1.0")
 public class RestController {
 
     private final UserService userService;
+
+
+
 
     @PostMapping("/login")
     public ResponseEntity<UserDto> login(@RequestParam String emailOrNickName, @RequestParam String password) {

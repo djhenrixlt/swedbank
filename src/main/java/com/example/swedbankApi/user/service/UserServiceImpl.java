@@ -35,8 +35,6 @@ public class UserServiceImpl implements UserService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException("Invalid credentials");
         }
-        user.setActive(true);
-
         return userMapper.toDto(user);
     }
 
