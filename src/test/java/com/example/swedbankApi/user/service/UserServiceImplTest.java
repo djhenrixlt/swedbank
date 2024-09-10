@@ -17,10 +17,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @Transactional
@@ -40,7 +42,7 @@ class UserServiceImplTest {
     private PasswordEncoder passwordEncoder;
 
     @Test
-    void getAllUsers_ReturnsUserList()  {
+    void getAllUsers_ReturnsUserList() {
         List<UserDto> userDtoList = userService.getAllUsers();
 
         assertAll(
@@ -189,6 +191,7 @@ class UserServiceImplTest {
                 () -> assertEquals(Set.of("ROLE_USER"), resultUserDto.getRoles())
         );
     }
+
     @Test
     void login_InvalidPassword_ThrowsException() {
         UserEntity existingUserEntity = TestUtils.createUserEntity();
@@ -201,6 +204,61 @@ class UserServiceImplTest {
         });
 
         assertEquals("Invalid credentials", exception.getMessage());
+    }
+
+    @Test
+    void checkIfUserExist_ExistingActiveUser_ThrowsException() {
+        UserDto inputUserDto = TestUtils.craeateUserDto();
+        UserEntity existingUser = new UserEntity();
+        existingUser.setNickName(inputUserDto.getNickName());
+        existingUser.setActive(true);
+        userRepo.save(existingUser);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            userService.createUser(inputUserDto);
+        });
+        assertEquals("User with this username already exists", exception.getMessage());
+    }
+
+    @Test
+    void checkIfUserExist_ExistingInactiveUser_UpdatesUserStatus() {
+        UserDto inputUserDto = TestUtils.craeateUserDto();
+        UserEntity existingUser = new UserEntity();
+        existingUser.setNickName(inputUserDto.getNickName());
+        existingUser.setActive(false);
+        userRepo.save(existingUser);
+
+        UserDto createdUserDto = userService.createUser(inputUserDto);
+
+        UserEntity updatedUser = userRepo.findById(createdUserDto.getId())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        assertTrue(updatedUser.isActive(), "User should be activated");
+    }
+
+    @Test
+    void deactivateUser_UserExists_DeactivatesUser() {
+        Long userId = 1L;
+        UserEntity existingUser = new UserEntity();
+        existingUser.setId(userId);
+        existingUser.setActive(true);
+        userRepo.save(existingUser);
+
+        userService.deactivateUser(userId);
+
+        UserEntity updatedUser = userRepo.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        assertFalse(updatedUser.isActive());
+    }
+
+    @Test
+    void deactivateUser_UserDoesNotExist_ThrowsException() {
+        Long userId = 1L;
+        when(userRepo.findById(userId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            userService.deactivateUser(userId);
+        });
+        assertEquals("User not found", exception.getMessage());
     }
 
 }

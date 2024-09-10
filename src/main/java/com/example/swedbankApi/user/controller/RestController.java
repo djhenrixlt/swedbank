@@ -42,16 +42,22 @@ public class RestController {
         return userService.getUserById(id);
     }
 
-    @PutMapping("/users/{id}")
+    @PostMapping("/users/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public UserDto updateUser(@PathVariable Long id, @RequestBody UserDto userDto) {
         return userService.updateUser(id, userDto);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable long id) {
         userService.deleteUser(id);
     }
 
+    @PutMapping("/users/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deactivateUser(@PathVariable long id) {
+        userService.deactivateUser(id);
+    }
 }

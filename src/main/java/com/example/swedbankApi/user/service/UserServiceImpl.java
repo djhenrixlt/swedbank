@@ -41,14 +41,15 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto createUser(final UserDto userDto) throws EntityNotFoundException {
-
+        checkIfUserExist(userDto);
         String encodedPassword = passwordEncoder.encode(userDto.getPassword());
         UserEntity user = userMapper.toEntity(userDto);
         user.setPassword(encodedPassword);
         user.setActive(true);
+
         Optional<RoleEntity> role = roleRepo.findById(1L);
         if (role.isEmpty()){
-            throw new NoSuchElementException("");
+            throw new NoSuchElementException("Role not found.");
         }
         user.setRoles(Set.of(role.get()));
 
@@ -56,8 +57,6 @@ public class UserServiceImpl implements UserService {
         return userMapper.toDto(savedUser);
 
     }
-
-
 
     public List<UserDto> getAllUsers() {
         return userRepo.findAll()
@@ -92,6 +91,29 @@ public class UserServiceImpl implements UserService {
         final UserEntity user = userRepo.findByNickName(username)
                 .orElseThrow(() -> new NoSuchElementException(""));
         return userMapper.toDto(user);
+    }
+
+    public void deactivateUser(Long id) {
+        UserEntity user = userRepo.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        user.setActive(false);
+        userRepo.save(user);
+    }
+
+    private void checkIfUserExist(UserDto userDto) {
+        Optional<UserEntity> existingUserOpt = userRepo.findByNickName(userDto.getNickName());
+
+        if (existingUserOpt.isPresent()) {
+            UserEntity existingUser = existingUserOpt.get();
+
+            if (existingUser.isActive()) {
+                throw new IllegalArgumentException("User with this username already exists");
+            } else {
+                // If the user is inactive, proceed to create a new user and ensure old data is not shown
+                existingUser.setActive(false);
+                userRepo.save(existingUser);
+            }
+        }
     }
 
 
