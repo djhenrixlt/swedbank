@@ -5,8 +5,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.Set;
-
 @Data
 @EqualsAndHashCode(exclude = "users")
 @NoArgsConstructor
@@ -15,12 +13,9 @@ import java.util.Set;
 public class RoleEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true)
     private String name;
 
-    @ManyToMany(mappedBy = "roles")
-    private Set<UserEntity> users;
 }

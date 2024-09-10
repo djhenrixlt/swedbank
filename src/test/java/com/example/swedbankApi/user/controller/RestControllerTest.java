@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,9 +22,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -61,8 +61,8 @@ class RestControllerTest {
     @Test
     void givenUserCredentials_whenLogin_thenReturnUserDto() throws Exception {
         mockMvc.perform(post("/api/v1.0/login")
-                        .param("username", "johndoe")
-                        .param("password", "password123"))
+                        .param("emailOrNickName", "johndoe")
+                        .param("password", "password"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("John"))
                 .andExpect(jsonPath("$.email").value("john.doe@example.com"));
@@ -107,6 +107,7 @@ class RestControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void givenUserId_whenDeleteUser_thenNoContent() throws Exception {
         mockMvc.perform(delete("/api/v1.0/users/{id}", 1))
                 .andExpect(status().isNoContent());

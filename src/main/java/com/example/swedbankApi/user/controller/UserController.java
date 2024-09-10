@@ -20,36 +20,45 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/index")
-    public String home(){
+    public String home() {
         return "index";
     }
 
     @GetMapping("/login")
-    public String login(){
+    public String login() {
         return "login";
     }
 
     @GetMapping("/register")
-    public String showRegistrationForm(Model model){
+    public String showRegistrationForm(Model model) {
         UserDto user = new UserDto();
         model.addAttribute("user", user);
         return "register";
     }
+
     @PostMapping("/register/save")
     public String registration(@Valid @ModelAttribute("user") UserDto userDto,
                                BindingResult result,
-                               Model model){
-        if(result.hasErrors()){
+                               Model model) {
+        UserDto existingUser = userService.getUserByUsername(userDto.getNickName());
+
+        if (existingUser != null && existingUser.getEmail() != null && !existingUser.getEmail().isEmpty()) {
+            result.rejectValue("email", null,
+                    "There is already an account registered with the same email");
+        }
+
+        if (result.hasErrors()) {
             model.addAttribute("user", userDto);
             return "/register";
         }
-        userService.createUser(userDto);
+
+        userService.saveUser(userDto);
         return "redirect:/register?success";
 
     }
 
     @GetMapping("/users")
-    public String users(Model model){
+    public String users(Model model) {
         List<UserDto> users = userService.getAllUsers();
         model.addAttribute("users", users);
         return "users";

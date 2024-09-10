@@ -19,7 +19,7 @@ public class RestController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<UserDto> login( @RequestParam String emailOrNickName,@RequestParam String password) {
+    public ResponseEntity<UserDto> login(@RequestParam String emailOrNickName, @RequestParam String password) {
         return new ResponseEntity<>(
                 userService
                         .login(emailOrNickName, password), HttpStatus.OK);
@@ -42,10 +42,9 @@ public class RestController {
         return userService.getUserById(id);
     }
 
-
     @PostMapping("/users/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public UserDto updateUser( @PathVariable Long id, @RequestBody  UserDto userDto) throws Exception {
+    public UserDto updateUser(@PathVariable Long id, @RequestBody UserDto userDto) throws Exception {
         return userService.updateUser(id, userDto);
     }
 
