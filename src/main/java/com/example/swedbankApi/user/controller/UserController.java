@@ -21,7 +21,7 @@ public class UserController {
 
     @GetMapping()
     public String home() {
-        return "index";
+        return "/main";
     }
 
     @GetMapping("/login")
@@ -46,7 +46,7 @@ public class UserController {
         }
 
         userService.createUser(userDto);
-        return "redirect:/register?success";
+        return "redirect:/login";
 
     }
 
