@@ -99,7 +99,7 @@ class RestControllerTest {
         userSave.setName("Updated Name");
         final UserDto updatedUser = mapper.toDto(userSave);
 
-        mockMvc.perform(put("/api/v1.0/users/{id}", userSave.getId())
+        mockMvc.perform(post("/api/v1.0/users/{id}", userSave.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedUser)))
                 .andExpect(status().isAccepted())
@@ -109,10 +109,12 @@ class RestControllerTest {
     @Test
     @WithMockUser(roles = "ADMIN")
     void givenUserId_whenDeleteUser_thenNoContent() throws Exception {
-        mockMvc.perform(delete("/api/v1.0/users/{id}", 1))
+        final UserEntity savedUser = userRepo.save(userEntity);
+        mockMvc.perform(delete("/api/v1.0/users/{id}", savedUser.getId()))
                 .andExpect(status().isNoContent());
 
-        Optional<UserEntity> deletedUser = userRepo.findById(userEntity.getId());
+        Optional<UserEntity> deletedUser = userRepo.findById(savedUser.getId());
         assertTrue(deletedUser.isEmpty());
     }
 }
+

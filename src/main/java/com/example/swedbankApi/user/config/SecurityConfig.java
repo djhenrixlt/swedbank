@@ -42,6 +42,8 @@ public class SecurityConfig {
                         form -> form
                                 .loginPage("/login")
                                 .loginProcessingUrl("/login")
+                                .usernameParameter("username")
+                                .passwordParameter("password")
                                 .defaultSuccessUrl("/users")
                                 .permitAll()
                 ).logout(
@@ -62,3 +64,4 @@ public class SecurityConfig {
                 .passwordEncoder(passwordEncoder());
     }
 }
+

@@ -18,21 +18,4 @@ public interface UserMapper {
     @Mapping(target = "password", ignore = true)
     UserDto toDto(UserEntity userEntity);
 
-//    @Named("stringToRoles")
-//    default Set<RoleEntity> stringToRoles(Set<String> roles) {
-//        return roles.stream()
-//                .map(role -> {
-//                    RoleEntity roleEntity = new RoleEntity();
-//                    roleEntity.setName(role);
-//                    return roleEntity;
-//                })
-//                .collect(Collectors.toSet());
-//    }
-//
-//    @Named("rolesToStrings")
-//    default Set<String> rolesToStrings(Set<RoleEntity> roleEntities) {
-//        return roleEntities.stream()
-//                .map(RoleEntity::getName)
-//                .collect(Collectors.toSet());
-//    }
 }

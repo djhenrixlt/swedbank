@@ -23,7 +23,7 @@ class UserMapperTest {
         assertAll(
                 () -> assertEquals(user.getName(), actual.getName()),
                 () -> assertEquals(user.getId(), actual.getId()),
-                () -> assertEquals(user.getNickName(), actual.getNickName()),
+                () -> assertEquals(user.getUsername(), actual.getUsername()),
                 () -> assertEquals(user.getEmail(), actual.getEmail()),
                 () -> assertEquals(user.getLastName(), actual.getLastName()),
                 () -> assertTrue(actual.isActive()),
@@ -42,7 +42,7 @@ class UserMapperTest {
         assertAll(
                 () -> assertEquals(userDto.getName(), actual.getName()),
                 () -> assertEquals(userDto.getId(), actual.getId()),
-                () -> assertEquals(userDto.getNickName(), actual.getNickName()),
+                () -> assertEquals(userDto.getUsername(), actual.getUsername()),
                 () -> assertEquals(userDto.getEmail(), actual.getEmail()),
                 () -> assertEquals(userDto.getLastName(), actual.getLastName()),
                 () -> assertTrue(actual.isActive()),

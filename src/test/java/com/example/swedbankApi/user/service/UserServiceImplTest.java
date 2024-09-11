@@ -17,12 +17,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @Transactional
@@ -51,7 +49,7 @@ class UserServiceImplTest {
                     UserDto userDto = userDtoList.get(0);
                     assertEquals("John", userDto.getName());
                     assertEquals("Doe", userDto.getLastName());
-                    assertEquals("johndoe", userDto.getNickName());
+                    assertEquals("johndoe", userDto.getUsername());
                     assertEquals("john.doe@example.com", userDto.getEmail());
                     assertTrue(userDto.isActive());
                     assertEquals(Set.of("ROLE_USER"), userDto.getRoles());
@@ -74,7 +72,7 @@ class UserServiceImplTest {
                 () -> assertEquals(inputUserDto.getLastName(), savedUserEntity.getLastName()),
                 () -> assertEquals(inputUserDto.getEmail(), savedUserEntity.getEmail()),
                 () -> assertEquals(inputUserDto.isActive(), savedUserEntity.isActive()),
-                () -> assertEquals(inputUserDto.getNickName(), savedUserEntity.getNickName()),
+                () -> assertEquals(inputUserDto.getUsername(), savedUserEntity.getUsername()),
                 () -> assertEquals(Set.of("ROLE_USER"),
                         savedUserEntity.getRoles().stream()
                                 .map(RoleEntity::getName)
@@ -84,28 +82,27 @@ class UserServiceImplTest {
 
     @Test
     void updateUser_ValidInput_ReturnsUpdatedUserDto() {
-        UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setId(1L);
-        userRepo.save(existingUserEntity);
+        final UserEntity existingUserEntity = TestUtils.createUserEntity();
+        final UserEntity savedUserEntity = userRepo.save(existingUserEntity);
 
         UserDto updatedUserDto = UserDto.builder()
-                .id(1L)
+                .id(savedUserEntity.getId())
                 .name("name1")
                 .lastName("lastName1")
-                .nickName("username1")
+                .username("username1")
                 .email("email1")
                 .active(true)
                 .roles(Set.of("ROLE_USER"))
                 .build();
 
-        UserDto resultUserDto = userService.updateUser(1L, updatedUserDto);
-        UserEntity updatedUserEntity = userRepo.findById(1L)
+        UserDto resultUserDto = userService.updateUser(savedUserEntity.getId(), updatedUserDto);
+        UserEntity updatedUserEntity = userRepo.findById(savedUserEntity.getId())
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
         assertAll(
                 () -> assertEquals(updatedUserDto.getName(), updatedUserEntity.getName()),
                 () -> assertEquals(updatedUserDto.getLastName(), updatedUserEntity.getLastName()),
-                () -> assertEquals(updatedUserDto.getNickName(), updatedUserEntity.getNickName()),
+                () -> assertEquals(updatedUserDto.getUsername(), updatedUserEntity.getUsername()),
                 () -> assertEquals(updatedUserDto.getEmail(), updatedUserEntity.getEmail()),
                 () -> assertEquals(updatedUserDto.isActive(), updatedUserEntity.isActive()),
                 () -> assertEquals(Set.of("ROLE_USER"),
@@ -118,7 +115,7 @@ class UserServiceImplTest {
                 () -> assertEquals(updatedUserDto.getId(), resultUserDto.getId()),
                 () -> assertEquals(updatedUserDto.getName(), resultUserDto.getName()),
                 () -> assertEquals(updatedUserDto.getLastName(), resultUserDto.getLastName()),
-                () -> assertEquals(updatedUserDto.getNickName(), resultUserDto.getNickName()),
+                () -> assertEquals(updatedUserDto.getUsername(), resultUserDto.getUsername()),
                 () -> assertEquals(updatedUserDto.getEmail(), resultUserDto.getEmail()),
                 () -> assertEquals(updatedUserDto.isActive(), resultUserDto.isActive()),
                 () -> assertEquals(updatedUserDto.getRoles(), resultUserDto.getRoles())
@@ -127,27 +124,25 @@ class UserServiceImplTest {
 
     @Test
     void deleteUser_ExistingUser_UserDeleted() {
-        UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setId(1L);
+        final UserEntity existingUserEntity = TestUtils.createUserEntity();
+        final UserEntity savedUserEntity = userRepo.save(existingUserEntity);
+        userService.deleteUser(savedUserEntity.getId());
 
-        userRepo.save(existingUserEntity);
-        userService.deleteUser(1L);
-
-        assertFalse(userRepo.existsById(1L));
+        assertFalse(userRepo.existsById(savedUserEntity.getId()));
     }
 
     @Test
     void getUserById_ExistingUser_ReturnsUserDto() {
         UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setId(1L);
+        existingUserEntity.setId(2L);
         userRepo.save(existingUserEntity);
-        UserDto resultUserDto = userService.getUserById(1L);
+        UserDto resultUserDto = userService.getUserById(2L);
 
         assertAll(
                 () -> assertEquals(existingUserEntity.getId(), resultUserDto.getId()),
                 () -> assertEquals(existingUserEntity.getName(), resultUserDto.getName()),
                 () -> assertEquals(existingUserEntity.getLastName(), resultUserDto.getLastName()),
-                () -> assertEquals(existingUserEntity.getNickName(), resultUserDto.getNickName()),
+                () -> assertEquals(existingUserEntity.getUsername(), resultUserDto.getUsername()),
                 () -> assertEquals(existingUserEntity.getEmail(), resultUserDto.getEmail()),
                 () -> assertEquals(existingUserEntity.isActive(), resultUserDto.isActive()),
                 () -> assertEquals(Set.of("ROLE_USER"), resultUserDto.getRoles())
@@ -157,37 +152,37 @@ class UserServiceImplTest {
     @Test
     void getUserByUsername_ExistingUser_ReturnsUserDto() {
         UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setNickName("username1");
-        userRepo.save(existingUserEntity);
+        existingUserEntity.setUsername("username1");
+        final UserEntity savedUserEntity = userRepo.save(existingUserEntity);
         UserDto resultUserDto = userService.getUserByUsername("username1");
 
         assertAll(
-                () -> assertEquals(existingUserEntity.getId(), resultUserDto.getId()),
-                () -> assertEquals(existingUserEntity.getName(), resultUserDto.getName()),
-                () -> assertEquals(existingUserEntity.getLastName(), resultUserDto.getLastName()),
-                () -> assertEquals(existingUserEntity.getNickName(), resultUserDto.getNickName()),
-                () -> assertEquals(existingUserEntity.getEmail(), resultUserDto.getEmail()),
-                () -> assertEquals(existingUserEntity.isActive(), resultUserDto.isActive()),
+                () -> assertEquals(savedUserEntity.getId(), resultUserDto.getId()),
+                () -> assertEquals(savedUserEntity.getName(), resultUserDto.getName()),
+                () -> assertEquals(savedUserEntity.getLastName(), resultUserDto.getLastName()),
+                () -> assertEquals(savedUserEntity.getUsername(), resultUserDto.getUsername()),
+                () -> assertEquals(savedUserEntity.getEmail(), resultUserDto.getEmail()),
+                () -> assertEquals(savedUserEntity.isActive(), resultUserDto.isActive()),
                 () -> assertEquals(Set.of("ROLE_USER"), resultUserDto.getRoles())
         );
     }
 
     @Test
     void login_SuccessfulLogin_ReturnsUserDto() {
-        UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setNickName("username1");
+        final UserEntity existingUserEntity = TestUtils.createUserEntity();
+        existingUserEntity.setUsername("username1");
         existingUserEntity.setPassword(passwordEncoder.encode("password"));
-        userRepo.save(existingUserEntity);
+        final UserEntity savedUserEntity = userRepo.save(existingUserEntity);
 
-        UserDto resultUserDto = userService.login("username1", "password");
+        final UserDto resultUserDto = userService.login("username1", "password");
 
         assertAll(
-                () -> assertEquals(existingUserEntity.getId(), resultUserDto.getId()),
-                () -> assertEquals(existingUserEntity.getName(), resultUserDto.getName()),
-                () -> assertEquals(existingUserEntity.getLastName(), resultUserDto.getLastName()),
-                () -> assertEquals(existingUserEntity.getNickName(), resultUserDto.getNickName()),
-                () -> assertEquals(existingUserEntity.getEmail(), resultUserDto.getEmail()),
-                () -> assertEquals(existingUserEntity.isActive(), resultUserDto.isActive()),
+                () -> assertEquals(savedUserEntity.getId(), resultUserDto.getId()),
+                () -> assertEquals(savedUserEntity.getName(), resultUserDto.getName()),
+                () -> assertEquals(savedUserEntity.getLastName(), resultUserDto.getLastName()),
+                () -> assertEquals(savedUserEntity.getUsername(), resultUserDto.getUsername()),
+                () -> assertEquals(savedUserEntity.getEmail(), resultUserDto.getEmail()),
+                () -> assertEquals(savedUserEntity.isActive(), resultUserDto.isActive()),
                 () -> assertEquals(Set.of("ROLE_USER"), resultUserDto.getRoles())
         );
     }
@@ -195,7 +190,7 @@ class UserServiceImplTest {
     @Test
     void login_InvalidPassword_ThrowsException() {
         UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setNickName("username1");
+        existingUserEntity.setUsername("username1");
         existingUserEntity.setPassword(passwordEncoder.encode("password"));
         userRepo.save(existingUserEntity);
 
@@ -210,7 +205,7 @@ class UserServiceImplTest {
     void checkIfUserExist_ExistingActiveUser_ThrowsException() {
         UserDto inputUserDto = TestUtils.craeateUserDto();
         UserEntity existingUser = new UserEntity();
-        existingUser.setNickName(inputUserDto.getNickName());
+        existingUser.setUsername(inputUserDto.getUsername());
         existingUser.setActive(true);
         userRepo.save(existingUser);
 
@@ -224,7 +219,7 @@ class UserServiceImplTest {
     void checkIfUserExist_ExistingInactiveUser_UpdatesUserStatus() {
         UserDto inputUserDto = TestUtils.craeateUserDto();
         UserEntity existingUser = new UserEntity();
-        existingUser.setNickName(inputUserDto.getNickName());
+        existingUser.setUsername(inputUserDto.getUsername());
         existingUser.setActive(false);
         userRepo.save(existingUser);
 
@@ -232,28 +227,25 @@ class UserServiceImplTest {
 
         UserEntity updatedUser = userRepo.findById(createdUserDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        assertTrue(updatedUser.isActive(), "User should be activated");
+        assertTrue(updatedUser.isActive());
     }
 
     @Test
     void deactivateUser_UserExists_DeactivatesUser() {
-        Long userId = 1L;
-        UserEntity existingUser = new UserEntity();
-        existingUser.setId(userId);
+        final UserEntity existingUser = new UserEntity();
         existingUser.setActive(true);
-        userRepo.save(existingUser);
+        final UserEntity updatedUser = userRepo.save(existingUser);
 
-        userService.deactivateUser(userId);
+        userService.deactivateUser(updatedUser.getId());
 
-        UserEntity updatedUser = userRepo.findById(userId)
+        UserEntity deletedUser = userRepo.findById(updatedUser.getId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        assertFalse(updatedUser.isActive());
+        assertFalse(deletedUser.isActive());
     }
 
     @Test
     void deactivateUser_UserDoesNotExist_ThrowsException() {
-        Long userId = 1L;
-        when(userRepo.findById(userId)).thenReturn(Optional.empty());
+        Long userId = 2L;
 
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
             userService.deactivateUser(userId);
@@ -262,4 +254,3 @@ class UserServiceImplTest {
     }
 
 }
-

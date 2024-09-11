@@ -8,17 +8,20 @@ import com.example.swedbankApi.user.repo.RoleRepo;
 import com.example.swedbankApi.user.repo.UserRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepo userRepo;
     private final RoleService roleService;
@@ -28,8 +31,25 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        UserEntity user = userRepo.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                mapRolesToAuthorities(user.getRoles()));
+    }
+
+    private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Set<RoleEntity> roles) {
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.getName()))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
     public UserDto login(String emailOrNickName, String password) {
-        UserEntity user = userRepo.findByNickName(emailOrNickName)
+        UserEntity user = userRepo.findByUsername(emailOrNickName)
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -48,14 +68,13 @@ public class UserServiceImpl implements UserService {
         user.setActive(true);
 
         Optional<RoleEntity> role = roleRepo.findById(1L);
-        if (role.isEmpty()){
+        if (role.isEmpty()) {
             throw new NoSuchElementException("Role not found.");
         }
         user.setRoles(Set.of(role.get()));
 
         UserEntity savedUser = userRepo.save(user);
         return userMapper.toDto(savedUser);
-
     }
 
     public List<UserDto> getAllUsers() {
@@ -64,7 +83,6 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::toDto)
                 .toList();
     }
-
 
     public UserDto updateUser(final Long userId, final UserDto userDto) {
         final UserEntity user = userRepo.findById(userId)
@@ -88,7 +106,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserByUsername(String username) {
-        final UserEntity user = userRepo.findByNickName(username)
+        final UserEntity user = userRepo.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException(""));
         return userMapper.toDto(user);
     }
@@ -101,7 +119,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void checkIfUserExist(UserDto userDto) {
-        Optional<UserEntity> existingUserOpt = userRepo.findByNickName(userDto.getNickName());
+        Optional<UserEntity> existingUserOpt = userRepo.findByUsername(userDto.getUsername());
 
         if (existingUserOpt.isPresent()) {
             UserEntity existingUser = existingUserOpt.get();
@@ -115,6 +133,5 @@ public class UserServiceImpl implements UserService {
             }
         }
     }
-
-
 }
+
