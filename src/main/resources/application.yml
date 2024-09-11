@@ -11,6 +11,8 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate.order_by.default_null_ordering: last
+    jwt:
+      secret: yourSecretKey
 
 
 #H2

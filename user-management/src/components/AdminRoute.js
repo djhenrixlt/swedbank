@@ -1,11 +1,11 @@
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Route, Navigate } from 'react-router-dom';
 
-const AdminRoute = ({ component: Component }) => {
-    const user = JSON.parse(localStorage.getItem('user'));
+const AdminRoute = ({ component: Component, ...rest }) => {
+    const isAuthenticated = !!localStorage.getItem('jwtToken');
+    const isAdmin = localStorage.getItem('role') === 'admin'; // Replace with your actual admin check
 
-    return user && user.roles.includes('ROLE_ADMIN') ? <Component /> : <Navigate to="/login" />;
+    return isAuthenticated && isAdmin ? <Component {...rest} /> : <Navigate to="/login" />;
 };
 
 export default AdminRoute;
-

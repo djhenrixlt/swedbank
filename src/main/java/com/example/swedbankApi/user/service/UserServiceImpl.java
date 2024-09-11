@@ -1,5 +1,7 @@
 package com.example.swedbankApi.user.service;
 
+import com.example.swedbankApi.user.config.JwtTokenProvider;
+import com.example.swedbankApi.user.dto.LoginDto;
 import com.example.swedbankApi.user.dto.UserDto;
 import com.example.swedbankApi.user.entity.RoleEntity;
 import com.example.swedbankApi.user.entity.UserEntity;
@@ -8,6 +10,10 @@ import com.example.swedbankApi.user.repo.RoleRepo;
 import com.example.swedbankApi.user.repo.UserRepo;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,18 +31,41 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepo roleRepo;
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider jwtTokenProvider;
 
+
+
+//    @Override
+//    public UserDto login(String emailOrNickName, String password) {
+//        UserEntity user = userRepo.findByNickName(emailOrNickName)
+//                .orElseThrow(() -> new NoSuchElementException("User not found"));
+//
+//        if (!passwordEncoder.matches(password, user.getPassword())) {
+//            throw new IllegalArgumentException("Invalid credentials");
+//        }
+//        return userMapper.toDto(user);
+//    }
 
     @Override
-    public UserDto login(String emailOrNickName, String password) {
-        UserEntity user = userRepo.findByNickName(emailOrNickName)
-                .orElseThrow(() -> new NoSuchElementException("User not found"));
+    public String login(LoginDto loginDto) {
+        // 01 - AuthenticationManager is used to authenticate the user
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                loginDto.getEmailOrNickName(),
+                loginDto.getPassword()
+        ));
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new IllegalArgumentException("Invalid credentials");
-        }
-        return userMapper.toDto(user);
+        /* 02 - SecurityContextHolder is used to allows the rest of the application to know
+        that the user is authenticated and can use user data from Authentication object */
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        // 03 - Generate the token based on username and secret key
+        String token = jwtTokenProvider.generateToken(authentication);
+
+        // 04 - Return the token to controller
+        return token;
     }
+
 
     public UserDto createUser(final UserDto userDto) throws EntityNotFoundException {
         checkIfUserExist(userDto);

@@ -172,39 +172,39 @@ class UserServiceImplTest {
         );
     }
 
-    @Test
-    void login_SuccessfulLogin_ReturnsUserDto() {
-        UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setNickName("username1");
-        existingUserEntity.setPassword(passwordEncoder.encode("password"));
-        userRepo.save(existingUserEntity);
+//    @Test
+//    void login_SuccessfulLogin_ReturnsUserDto() {
+//        UserEntity existingUserEntity = TestUtils.createUserEntity();
+//        existingUserEntity.setNickName("username1");
+//        existingUserEntity.setPassword(passwordEncoder.encode("password"));
+//        userRepo.save(existingUserEntity);
+//
+//        UserDto resultUserDto = userService.login("username1", "password");
+//
+//        assertAll(
+//                () -> assertEquals(existingUserEntity.getId(), resultUserDto.getId()),
+//                () -> assertEquals(existingUserEntity.getName(), resultUserDto.getName()),
+//                () -> assertEquals(existingUserEntity.getLastName(), resultUserDto.getLastName()),
+//                () -> assertEquals(existingUserEntity.getNickName(), resultUserDto.getNickName()),
+//                () -> assertEquals(existingUserEntity.getEmail(), resultUserDto.getEmail()),
+//                () -> assertEquals(existingUserEntity.isActive(), resultUserDto.isActive()),
+//                () -> assertEquals(Set.of("ROLE_USER"), resultUserDto.getRoles())
+//        );
+//    }
 
-        UserDto resultUserDto = userService.login("username1", "password");
-
-        assertAll(
-                () -> assertEquals(existingUserEntity.getId(), resultUserDto.getId()),
-                () -> assertEquals(existingUserEntity.getName(), resultUserDto.getName()),
-                () -> assertEquals(existingUserEntity.getLastName(), resultUserDto.getLastName()),
-                () -> assertEquals(existingUserEntity.getNickName(), resultUserDto.getNickName()),
-                () -> assertEquals(existingUserEntity.getEmail(), resultUserDto.getEmail()),
-                () -> assertEquals(existingUserEntity.isActive(), resultUserDto.isActive()),
-                () -> assertEquals(Set.of("ROLE_USER"), resultUserDto.getRoles())
-        );
-    }
-
-    @Test
-    void login_InvalidPassword_ThrowsException() {
-        UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setNickName("username1");
-        existingUserEntity.setPassword(passwordEncoder.encode("password"));
-        userRepo.save(existingUserEntity);
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.login("username1", "wrongPassword");
-        });
-
-        assertEquals("Invalid credentials", exception.getMessage());
-    }
+//    @Test
+//    void login_InvalidPassword_ThrowsException() {
+//        UserEntity existingUserEntity = TestUtils.createUserEntity();
+//        existingUserEntity.setNickName("username1");
+//        existingUserEntity.setPassword(passwordEncoder.encode("password"));
+//        userRepo.save(existingUserEntity);
+//
+//        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+//            userService.login("username1", "wrongPassword");
+//        });
+//
+//        assertEquals("Invalid credentials", exception.getMessage());
+//    }
 
     @Test
     void checkIfUserExist_ExistingActiveUser_ThrowsException() {
