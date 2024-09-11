@@ -27,7 +27,6 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
     private final UserRepo userRepo;
-    private final RoleService roleService;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepo roleRepo;
@@ -36,33 +35,23 @@ public class UserServiceImpl implements UserService {
 
 
 
-//    @Override
-//    public UserDto login(String emailOrNickName, String password) {
-//        UserEntity user = userRepo.findByNickName(emailOrNickName)
-//                .orElseThrow(() -> new NoSuchElementException("User not found"));
-//
-//        if (!passwordEncoder.matches(password, user.getPassword())) {
-//            throw new IllegalArgumentException("Invalid credentials");
-//        }
-//        return userMapper.toDto(user);
-//    }
+
 
     @Override
-    public String login(LoginDto loginDto) {
-        // 01 - AuthenticationManager is used to authenticate the user
+    public String login(final LoginDto loginDto) {
+        //AuthenticationManager is used to authenticate the user
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                loginDto.getEmailOrNickName(),
+                loginDto.getUsername(),
                 loginDto.getPassword()
         ));
 
-        /* 02 - SecurityContextHolder is used to allows the rest of the application to know
-        that the user is authenticated and can use user data from Authentication object */
+        //SecurityContextHolder is used to allows the rest of the application to know
+        //that the user is authenticated and can use user data from Authentication object */
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 03 - Generate the token based on username and secret key
+        //Generate the token based on username and secret key
         String token = jwtTokenProvider.generateToken(authentication);
 
-        // 04 - Return the token to controller
         return token;
     }
 
