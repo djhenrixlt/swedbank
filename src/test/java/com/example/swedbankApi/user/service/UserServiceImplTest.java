@@ -1,6 +1,8 @@
 package com.example.swedbankApi.user.service;
 
 import com.example.swedbankApi.TestUtils;
+import com.example.swedbankApi.user.config.JwtTokenProvider;
+import com.example.swedbankApi.user.dto.LoginDto;
 import com.example.swedbankApi.user.dto.UserDto;
 import com.example.swedbankApi.user.entity.RoleEntity;
 import com.example.swedbankApi.user.entity.UserEntity;
@@ -10,6 +12,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -40,6 +43,9 @@ class UserServiceImplTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
 
     @Test
     void getAllUsers_ReturnsUserList() {
@@ -172,39 +178,44 @@ class UserServiceImplTest {
         );
     }
 
-//    @Test
-//    void login_SuccessfulLogin_ReturnsUserDto() {
-//        UserEntity existingUserEntity = TestUtils.createUserEntity();
-//        existingUserEntity.setNickName("username1");
-//        existingUserEntity.setPassword(passwordEncoder.encode("password"));
-//        userRepo.save(existingUserEntity);
-//
-//        UserDto resultUserDto = userService.login("username1", "password");
-//
-//        assertAll(
-//                () -> assertEquals(existingUserEntity.getId(), resultUserDto.getId()),
-//                () -> assertEquals(existingUserEntity.getName(), resultUserDto.getName()),
-//                () -> assertEquals(existingUserEntity.getLastName(), resultUserDto.getLastName()),
-//                () -> assertEquals(existingUserEntity.getNickName(), resultUserDto.getNickName()),
-//                () -> assertEquals(existingUserEntity.getEmail(), resultUserDto.getEmail()),
-//                () -> assertEquals(existingUserEntity.isActive(), resultUserDto.isActive()),
-//                () -> assertEquals(Set.of("ROLE_USER"), resultUserDto.getRoles())
-//        );
-//    }
+    @Test
+    void login_SuccessfulLogin_ReturnsJwtToken() {
 
-//    @Test
-//    void login_InvalidPassword_ThrowsException() {
-//        UserEntity existingUserEntity = TestUtils.createUserEntity();
-//        existingUserEntity.setNickName("username1");
-//        existingUserEntity.setPassword(passwordEncoder.encode("password"));
-//        userRepo.save(existingUserEntity);
-//
-//        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-//            userService.login("username1", "wrongPassword");
-//        });
-//
-//        assertEquals("Invalid credentials", exception.getMessage());
-//    }
+        UserEntity existingUserEntity = TestUtils.createUserEntity();
+        existingUserEntity.setNickName("username1");
+        existingUserEntity.setPassword(passwordEncoder.encode("password"));
+        userRepo.save(existingUserEntity);
+
+        LoginDto loginDto = new LoginDto();
+        loginDto.setUsername("username1");
+        loginDto.setPassword("password");
+
+        String token = userService.login(loginDto);
+
+        // Assert: Check that the token is not null or empty
+        assertNotNull(token);
+        assertFalse(token.isEmpty());
+
+//        Claims claims = jwtTokenProvider.getClaimsFromToken(token);
+//        assertEquals("username1", claims.getSubject());
+    }
+    @Test
+    void login_InvalidPassword_ThrowsAuthenticationException() {
+        UserEntity existingUserEntity = TestUtils.createUserEntity();
+        existingUserEntity.setNickName("username1");
+        existingUserEntity.setPassword(passwordEncoder.encode("password"));
+        userRepo.save(existingUserEntity);
+
+
+        LoginDto loginDto = new LoginDto();
+        loginDto.setUsername("username1");
+        loginDto.setPassword("wrongPassword");
+
+        // Act & Assert: Verify that the method throws an AuthenticationException
+        assertThrows(AuthenticationException.class, () -> {
+            userService.login(loginDto);
+        });
+    }
 
     @Test
     void checkIfUserExist_ExistingActiveUser_ThrowsException() {
