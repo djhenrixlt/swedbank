@@ -54,7 +54,7 @@ class RestControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
-        userDto = TestUtils.craeateUserDto();
+        userDto = TestUtils.createUserDto();
         userEntity = TestUtils.createUserEntity();
     }
 

@@ -67,8 +67,7 @@ class UserServiceImplTest {
 
     @Test
     void createUser_ValidInput_ReturnsUserDto() {
-        UserDto inputUserDto = TestUtils.craeateUserDto();
-
+        UserDto inputUserDto = TestUtils.createUserDto();
 
         UserDto createdUserDto = userService.createUser(inputUserDto);
 
@@ -196,9 +195,11 @@ class UserServiceImplTest {
         assertNotNull(token);
         assertFalse(token.isEmpty());
 
-//        Claims claims = jwtTokenProvider.getClaimsFromToken(token);
-//        assertEquals("username1", claims.getSubject());
+        // Uncomment if using actual JWT validation logic
+        // Claims claims = jwtTokenProvider.getClaimsFromToken(token);
+        // assertEquals("username1", claims.getSubject());
     }
+
     @Test
     void login_InvalidPassword_ThrowsAuthenticationException() {
         UserEntity existingUserEntity = TestUtils.createUserEntity();
@@ -206,20 +207,17 @@ class UserServiceImplTest {
         existingUserEntity.setPassword(passwordEncoder.encode("password"));
         userRepo.save(existingUserEntity);
 
-
         LoginDto loginDto = new LoginDto();
         loginDto.setUsername("username1");
         loginDto.setPassword("wrongPassword");
 
         // Act & Assert: Verify that the method throws an AuthenticationException
-        assertThrows(AuthenticationException.class, () -> {
-            userService.login(loginDto);
-        });
+        assertThrows(AuthenticationException.class, () -> userService.login(loginDto));
     }
 
     @Test
     void checkIfUserExist_ExistingActiveUser_ThrowsException() {
-        UserDto inputUserDto = TestUtils.craeateUserDto();
+        UserDto inputUserDto = TestUtils.createUserDto();
         UserEntity existingUser = new UserEntity();
         existingUser.setUsername(inputUserDto.getUsername());
         existingUser.setActive(true);
@@ -233,16 +231,19 @@ class UserServiceImplTest {
 
     @Test
     void checkIfUserExist_ExistingInactiveUser_UpdatesUserStatus() {
-        UserDto inputUserDto = TestUtils.craeateUserDto();
+        UserDto inputUserDto = TestUtils.createUserDto(); // Creates a new user DTO
         UserEntity existingUser = new UserEntity();
         existingUser.setUsername(inputUserDto.getUsername());
         existingUser.setActive(false);
-        userRepo.save(existingUser);
+
+        // Save the existing user without manually setting the ID
+        when(userRepo.save(existingUser)).thenReturn(existingUser);
 
         UserDto createdUserDto = userService.createUser(inputUserDto);
 
         UserEntity updatedUser = userRepo.findById(createdUserDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
         assertTrue(updatedUser.isActive(), "User should be activated");
     }
 

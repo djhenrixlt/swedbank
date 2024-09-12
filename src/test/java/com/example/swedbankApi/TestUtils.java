@@ -12,7 +12,7 @@ import java.util.Set;
 @UtilityClass
 public class TestUtils {
 
-    public UserDto craeateUserDto() {
+    public UserDto createUserDto() {
         Set<String> roles = new HashSet<>();
         roles.add("ROLE_USER");
 
@@ -21,7 +21,7 @@ public class TestUtils {
                 .lastName("lastName1")
                 .username("username1")
                 .email("email1")
-                .id(1)
+                .id(1L)
                 .password("password")
                 .active(true)
                 .roles(roles)

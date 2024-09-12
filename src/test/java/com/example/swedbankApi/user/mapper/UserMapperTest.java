@@ -36,7 +36,7 @@ class UserMapperTest {
 
     @Test
     void givenUserDto_whenMappingToUserEntity_thenReturnUserEntity() {
-        final UserDto userDto = TestUtils.craeateUserDto();
+        final UserDto userDto = TestUtils.createUserDto();
         final UserEntity actual = mapper.toEntity(userDto);
 
         assertAll(
