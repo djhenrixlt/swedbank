@@ -19,7 +19,7 @@ public class TestUtils {
         return UserDto.builder()
                 .name("name1")
                 .lastName("lastName1")
-                .nickName("username1")
+                .username("username1")
                 .email("email1")
                 .id(1)
                 .password("password")
@@ -39,7 +39,7 @@ public class TestUtils {
         UserEntity userEntity = new UserEntity();
         userEntity.setName("name1");
         userEntity.setLastName("lastName1");
-        userEntity.setNickName("username1");
+        userEntity.setUsername("username1");
         userEntity.setEmail("email1");
         userEntity.setId(1);
         userEntity.setPassword("password");

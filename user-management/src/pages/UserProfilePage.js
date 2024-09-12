@@ -11,13 +11,16 @@ const UserProfilePage = () => {
     useEffect(() => {
         // Fetch user data from API
         const fetchUser = async () => {
-            const storedUser = JSON.parse(localStorage.getItem('user'));
+            const token = localStorage.getItem('jwtToken'); // Use stored JWT token
             try {
-                const response = await axios.get(`/api/v1.0/users/${storedUser.id}`);
+                const response = await axios.get(`/api/v1.0/users/self`, {
+                    headers: { 'Authorization': `Bearer ${token}` } // Pass token for auth
+                });
                 setUser(response.data);
                 reset(response.data);
             } catch (error) {
                 alert('Failed to fetch user data');
+                console.error(error);
             }
         };
 
@@ -26,21 +29,31 @@ const UserProfilePage = () => {
 
     const onSubmit = async (data) => {
         try {
-            await axios.post(`/api/v1.0/users/${user.id}`, data);
-            alert('Profile updated');
+            const token = localStorage.getItem('jwtToken');
+            await axios.post(`/api/v1.0/users/self`, data, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            alert('Profile updated successfully');
         } catch (error) {
-            alert('Update failed');
+            alert('Failed to update profile');
+            console.error(error);
         }
     };
 
-    const handleDelete = async () => {
-        try {
-            await axios.delete(`/api/v1.0/users/${user.id}`);
-            localStorage.removeItem('user');
-            navigate('/login');
-            alert('Account deactivated');
-        } catch (error) {
-            alert('Deactivation failed');
+    const handleDeactivate = async () => {
+        if (window.confirm("Are you sure you want to deactivate your account?")) {
+            try {
+                const token = localStorage.getItem('jwtToken');
+                await axios.put(`/api/v1.0/users/self/deactivate`, {}, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                localStorage.removeItem('jwtToken'); // Remove JWT token
+                navigate('/login');
+                alert('Account deactivated');
+            } catch (error) {
+                alert('Failed to deactivate account');
+                console.error(error);
+            }
         }
     };
 
@@ -48,17 +61,31 @@ const UserProfilePage = () => {
 
     return (
         <div>
+            <h1>Your Profile</h1>
             <form onSubmit={handleSubmit(onSubmit)}>
-                <input {...register('name')} placeholder="Name" />
-                <input {...register('lastName')} placeholder="Last Name" />
-                <input {...register('nickName')} placeholder="Nickname" />
-                <input {...register('email')} placeholder="Email" />
+                <div>
+                    <label>Name:</label>
+                    <input {...register('name')} placeholder="Name" />
+                </div>
+                <div>
+                    <label>Last Name:</label>
+                    <input {...register('lastName')} placeholder="Last Name" />
+                </div>
+                <div>
+                    <label>Username:</label>
+                    <input {...register('username')} placeholder="Username" />
+                </div>
+                <div>
+                    <label>Email:</label>
+                    <input {...register('email')} placeholder="Email" />
+                </div>
                 <button type="submit">Update Profile</button>
             </form>
-            <button onClick={handleDelete}>Deactivate Account</button>
+            <button onClick={handleDeactivate} style={{ marginTop: '20px', color: 'red' }}>
+                Deactivate Account
+            </button>
         </div>
     );
 };
 
 export default UserProfilePage;
-

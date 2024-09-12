@@ -50,9 +50,9 @@ const RegisterPage = () => {
                 </div>
 
                 <div className="form-group">
-                    <label>Nickname</label>
-                    <input {...register('nickName', { required: 'Nickname is required' })} placeholder="Nickname" />
-                    {errors.nickName && <p className="error-text">{errors.nickName.message}</p>}
+                    <label>Username</label>
+                    <input {...register('username', { required: 'Username is required' })} placeholder="Username" />
+                    {errors.username && <p className="error-text">{errors.username.message}</p>}
                 </div>
 
                 <div className="form-group">

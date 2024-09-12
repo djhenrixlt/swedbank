@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 
@@ -24,7 +25,7 @@ public class RestController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDto loginDto){
+    public ResponseEntity<AuthResponseDto> login(@RequestBody LoginDto loginDto) {
 
         //Receive the token from AuthService
         String token = userService.login(loginDto);
@@ -48,6 +49,13 @@ public class RestController {
         return userService.getAllUsers();
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/users/self")
+    public ResponseEntity<UserDto> getCurrentUser(Principal principal) {
+        UserDto userDto = userService.getUserByUsername(principal.getName());
+        return ResponseEntity.ok(userDto);
+    }
+
     @PreAuthorize("hasRole('ROLE_ADMIN') or #principal.name == @userService.getUserById(#id).getEmail()")
     @GetMapping("/users/{id}")
     public UserDto finUserById(@PathVariable long id) {
@@ -60,6 +68,14 @@ public class RestController {
         return userService.updateUser(id, userDto);
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/users/self")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public UserDto updateUserProfile(@RequestBody UserDto userDto, Principal principal) {
+        UserDto user = userService.getUserByUsername(principal.getName());
+        return userService.updateUser(user.getId(), userDto);
+    }
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -67,9 +83,18 @@ public class RestController {
         userService.deleteUser(id);
     }
 
+
     @PutMapping("/users/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deactivateUser(@PathVariable long id) {
         userService.deactivateUser(id);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/users/self/deactivate")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deactivateCurrentUser(Principal principal) {
+        UserDto user = userService.getUserByUsername(principal.getName());
+        userService.deactivateUser(user.getId());
     }
 }

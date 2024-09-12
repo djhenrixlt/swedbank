@@ -34,9 +34,6 @@ public class UserServiceImpl implements UserService {
     private final JwtTokenProvider jwtTokenProvider;
 
 
-
-
-
     @Override
     public String login(final LoginDto loginDto) {
         //AuthenticationManager is used to authenticate the user
@@ -64,7 +61,7 @@ public class UserServiceImpl implements UserService {
         user.setActive(true);
 
         Optional<RoleEntity> role = roleRepo.findById(1L);
-        if (role.isEmpty()){
+        if (role.isEmpty()) {
             throw new NoSuchElementException("Role not found.");
         }
         user.setRoles(Set.of(role.get()));
@@ -104,7 +101,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getUserByUsername(String username) {
-        final UserEntity user = userRepo.findByNickName(username)
+        final UserEntity user = userRepo.findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException(""));
         return userMapper.toDto(user);
     }
@@ -116,8 +113,22 @@ public class UserServiceImpl implements UserService {
         userRepo.save(user);
     }
 
+    @Override
+    public void deactivateUserByEmail(String email) {
+        UserEntity user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        user.setActive(false);
+        userRepo.save(user);
+    }
+
+    public UserDto getUsersByEmail(String email) {
+        UserEntity user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return userMapper.toDto(user);
+    }
+
     private void checkIfUserExist(UserDto userDto) {
-        Optional<UserEntity> existingUserOpt = userRepo.findByNickName(userDto.getNickName());
+        Optional<UserEntity> existingUserOpt = userRepo.findByUsername(userDto.getUsername());
 
         if (existingUserOpt.isPresent()) {
             UserEntity existingUser = existingUserOpt.get();

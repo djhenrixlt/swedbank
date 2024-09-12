@@ -16,4 +16,6 @@ public interface UserService {
     void deleteUser(Long id);
     List<UserDto> getAllUsers();
     void deactivateUser(Long id);
+    void deactivateUserByEmail(String email);
+    UserDto getUsersByEmail(String email);
 }
