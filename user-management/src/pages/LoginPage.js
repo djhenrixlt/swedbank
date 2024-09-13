@@ -30,7 +30,7 @@ const LoginPage = () => {
             localStorage.setItem('jwtToken', jwtToken);
 
             // Redirect to the DashboardPage.js after successful login
-            navigate('pages/dashboard');
+            navigate('/dashboard');
         } catch (error) {
             // Handle error response and display an appropriate message
             if (error.response) {

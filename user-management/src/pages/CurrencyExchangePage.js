@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import './CurrencyExchangePage.css'; // Import the CSS file
 
 const CurrencyExchangePage = () => {
     const [rates, setRates] = useState({});
@@ -7,15 +8,19 @@ const CurrencyExchangePage = () => {
     const [fromCurrency, setFromCurrency] = useState('USD');
     const [toCurrency, setToCurrency] = useState('EUR');
     const [result, setResult] = useState(null);
+    const [loading, setLoading] = useState(true); // Add loading state
+    const [error, setError] = useState(null); // Add error state
 
     useEffect(() => {
-        // Fetch exchange rates from an external API or your backend
+        // Fetch exchange rates from an external API
         const fetchRates = async () => {
             try {
                 const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
                 setRates(response.data.rates);
+                setLoading(false); // Set loading to false after fetching data
             } catch (error) {
-                console.error("Error fetching exchange rates:", error);
+                setError("Error fetching exchange rates.");
+                setLoading(false); // Set loading to false on error
             }
         };
 
@@ -23,10 +28,22 @@ const CurrencyExchangePage = () => {
     }, []);
 
     const handleExchange = () => {
+        if (!rates[fromCurrency] || !rates[toCurrency]) {
+            setError("Invalid currency selected.");
+            return;
+        }
         const rate = rates[toCurrency] / rates[fromCurrency];
         const convertedAmount = (amount * rate).toFixed(2);
         setResult(`${amount} ${fromCurrency} = ${convertedAmount} ${toCurrency}`);
     };
+
+    if (loading) {
+        return <div className="loading">Loading exchange rates...</div>;
+    }
+
+    if (error) {
+        return <div className="error">{error}</div>;
+    }
 
     return (
         <div className="currency-exchange-container">
@@ -37,6 +54,7 @@ const CurrencyExchangePage = () => {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="Amount"
+                    min="0"
                 />
                 <select value={fromCurrency} onChange={(e) => setFromCurrency(e.target.value)}>
                     {Object.keys(rates).map(currency => (
@@ -50,7 +68,7 @@ const CurrencyExchangePage = () => {
                 </select>
                 <button onClick={handleExchange}>Exchange</button>
             </div>
-            {result && <p>{result}</p>}
+            {result && <p className="result">{result}</p>}
         </div>
     );
 };

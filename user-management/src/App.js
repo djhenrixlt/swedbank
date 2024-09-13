@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import AdminPage from './pages/AdminPage';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
+import CurrencyExchangePage from './pages/CurrencyExchangePage';
 import './App.css';
 
 function App() {
@@ -43,7 +44,8 @@ function App() {
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/profile" element={<PrivateRoute component={UserProfilePage} />} />
-                        <Route path="/dashboard" element={<PrivateRoute component={DashboardPage} />} />
+                        <Route path="/dashboard" element={<DashboardPage />} />
+                        <Route path="/currency-exchange" element={<CurrencyExchangePage />} />
                         <Route path="/admin" element={<AdminRoute component={AdminPage} />} />
                         <Route path="/" element={<HomePage />} />
                     </Routes>
