@@ -20,16 +20,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepo userRepo;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserEntity user = userRepo.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+        UserEntity user = userRepo.findByUsernameOrEmail(login,login)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + login));
 
         Set<GrantedAuthority> authorities = user.getRoles().stream()
                 .map((role) -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toSet());
 
         return new org.springframework.security.core.userdetails.User(
-                username,
+                login,
                 user.getPassword(),
                 authorities
         );

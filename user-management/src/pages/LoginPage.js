@@ -15,7 +15,7 @@ const LoginPage = () => {
         try {
             // Make a POST request to the Spring Boot backend for authentication
             const response = await axios.post('/api/v1.0/login', {
-                username: data.username,
+                login: data.login,
                 password: data.password
             }, {
                 headers: {
@@ -51,11 +51,11 @@ const LoginPage = () => {
             <form onSubmit={handleSubmit(onSubmit)} className="login-form">
                 <div className="form-group">
                     <input
-                        {...register('username', { required: 'Username is required' })}
-                        placeholder="username"
+                        {...register('login', { required: 'Username or email is required' })}
+                        placeholder="Username or email"
                         className="form-input"
                     />
-                    {errors.username && <p className="error-text">{errors.username.message}</p>}
+                    {errors.login && <p className="error-text">{errors.login.message}</p>}
                 </div>
                 <div className="form-group">
                     <input

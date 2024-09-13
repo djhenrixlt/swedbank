@@ -186,7 +186,7 @@ class UserServiceImplTest {
         userRepo.save(existingUserEntity);
 
         LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("username1");
+        loginDto.setLogin("username1");
         loginDto.setPassword("password");
 
         String token = userService.login(loginDto);
@@ -208,7 +208,7 @@ class UserServiceImplTest {
         userRepo.save(existingUserEntity);
 
         LoginDto loginDto = new LoginDto();
-        loginDto.setUsername("username1");
+        loginDto.setLogin("username1");
         loginDto.setPassword("wrongPassword");
 
         // Act & Assert: Verify that the method throws an AuthenticationException

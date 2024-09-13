@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -13,35 +14,45 @@ import java.security.Key;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenProvider {
 
     private final String jwtSecret = generateSecretKey();
 
-    public String generateToken(Authentication authentication) {
 
+    public String generateToken(Authentication authentication) {
+        // Get the username from the authentication object
         String username = authentication.getName();
+
+        // Get the current date and set the expiration date (1 hour later)
         Date currentDate = new Date();
-        long jwtExpirationDate = 3600000;
+        long jwtExpirationDate = 3600000; // 1 hour
         Date expireDate = new Date(currentDate.getTime() + jwtExpirationDate);
 
-        String token = Jwts.builder()
-                .subject(username)
-                .issuedAt(new Date())
-                .expiration(expireDate)
-                .signWith(key(), SignatureAlgorithm.HS256)
-                .compact();
+        // Extract the roles (authorities) from the authentication object
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority) // Get the string representation of each role
+                .collect(Collectors.toList());
 
-        return token;
+        return Jwts.builder()
+                .setSubject(username) // Set the subject as the username
+                .claim("roles", roles) // Add roles to the JWT claims
+                .setIssuedAt(currentDate) // Set issued date
+                .setExpiration(expireDate) // Set expiration date
+                .signWith(key(), SignatureAlgorithm.HS256) // Sign the token
+                .compact();// Return the generated token
     }
 
-    private Key key(){
+
+    private Key key() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }
 
     // extract username from JWT token
-    public String getUsername(String token){
+    public String getUsername(String token) {
 
         return Jwts.parser()
                 .verifyWith((SecretKey) key())
@@ -52,7 +63,7 @@ public class JwtTokenProvider {
     }
 
     // validate JWT token
-    public boolean validateToken(String token){
+    public boolean validateToken(String token) {
         Jwts.parser()
                 .verifyWith((SecretKey) key())
                 .build()
@@ -60,6 +71,7 @@ public class JwtTokenProvider {
         return true;
 
     }
+
     public String generateSecretKey() {
         // length means (32 bytes are required for 256-bit key)
         int length = 32;
