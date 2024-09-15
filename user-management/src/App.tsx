@@ -10,7 +10,8 @@ import AdminRoute from './components/AdminRoute';
 import CurrencyExchangePage from './pages/CurrencyExchangePage';
 import './App.css';
 
-function App() {
+// App component
+const App: React.FC = () => {
     return (
         <Router>
             <div className="app-container">
@@ -57,9 +58,10 @@ function App() {
             </div>
         </Router>
     );
-}
+};
 
-const HomePage = () => (
+// HomePage component
+const HomePage: React.FC = () => (
     <div className="home-page">
         <h1>Welcome to User Management</h1>
         <p>Manage your profile and admin settings easily.</p>

@@ -1,15 +1,22 @@
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './RegisterPage.css'; // Assuming this CSS file is present
 
-const RegisterPage = () => {
-    const { register, handleSubmit, formState: { errors } } = useForm();
+interface RegisterFormData {
+    name: string;
+    lastName: string;
+    username: string;
+    email: string;
+    password: string;
+}
+
+const RegisterPage: React.FC = () => {
+    const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>();
     const navigate = useNavigate();
 
-    const onSubmit = async (data) => {
-        console.log("Submitting Data:", data); // Debugging log
+    const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
         try {
             const response = await axios.post('/api/v1.0/signup', data, {
                 headers: {
@@ -20,15 +27,13 @@ const RegisterPage = () => {
                 navigate('/login'); // Redirect to login page after successful registration
             }
         } catch (error) {
-            if (error.response) {
-                console.error("Backend responded with status", error.response.status, ":", error.response.data);
-                alert(`Registration failed: ${error.response.data}`);
-            } else if (error.request) {
-                console.error("No response received:", error.request);
-                alert('Registration failed: No response from server');
+            if (axios.isAxiosError(error)) {
+                // TypeScript can recognize AxiosError
+                console.error("Backend responded with status", error.response?.status, ":", error.response?.data);
+                alert(`Registration failed: ${error.response?.data || error.message}`);
             } else {
-                console.error("Error setting up request:", error.message);
-                alert(`Registration failed: ${error.message}`);
+                console.error("Unexpected error:", error);
+                alert(`Registration failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
         }
     };
@@ -57,7 +62,7 @@ const RegisterPage = () => {
 
                 <div className="form-group">
                     <label>Email</label>
-                    <input {...register('email', { required: 'Email is required' })} placeholder="Email" type="email" />
+                    <input {...register('email', { required: 'Email is required', pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Invalid email address' } })} placeholder="Email" type="email" />
                     {errors.email && <p className="error-text">{errors.email.message}</p>}
                 </div>
 

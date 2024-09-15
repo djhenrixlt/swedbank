@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const DashboardPage = () => {
+const DashboardPage: React.FC = () => {
     const navigate = useNavigate();
 
     const handleLogout = () => {

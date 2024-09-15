@@ -2,20 +2,25 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './CurrencyExchangePage.css'; // Import the CSS file
 
-const CurrencyExchangePage = () => {
-    const [rates, setRates] = useState({});
-    const [amount, setAmount] = useState(0);
-    const [fromCurrency, setFromCurrency] = useState('USD');
-    const [toCurrency, setToCurrency] = useState('EUR');
-    const [result, setResult] = useState(null);
-    const [loading, setLoading] = useState(true); // Add loading state
-    const [error, setError] = useState(null); // Add error state
+// Define types for exchange rates
+interface Rates {
+    [key: string]: number;
+}
+
+const CurrencyExchangePage: React.FC = () => {
+    const [rates, setRates] = useState<Rates>({});
+    const [amount, setAmount] = useState<number>(0);
+    const [fromCurrency, setFromCurrency] = useState<string>('USD');
+    const [toCurrency, setToCurrency] = useState<string>('EUR');
+    const [result, setResult] = useState<string | null>(null);
+    const [loading, setLoading] = useState<boolean>(true); // Add loading state
+    const [error, setError] = useState<string | null>(null); // Add error state
 
     useEffect(() => {
         // Fetch exchange rates from an external API
         const fetchRates = async () => {
             try {
-                const response = await axios.get('https://api.exchangerate-api.com/v4/latest/USD');
+                const response = await axios.get<{ rates: Rates }>('https://api.exchangerate-api.com/v4/latest/USD');
                 setRates(response.data.rates);
                 setLoading(false); // Set loading to false after fetching data
             } catch (error) {
@@ -52,7 +57,7 @@ const CurrencyExchangePage = () => {
                 <input
                     type="number"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    onChange={(e) => setAmount(Number(e.target.value))}
                     placeholder="Amount"
                     min="0"
                 />

@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
-const UserProfilePage = () => {
-    const [user, setUser] = useState(null);
-    const { register, handleSubmit, reset } = useForm();
+// Define types for user data and form input
+interface User {
+    name: string;
+    lastName: string;
+    username: string;
+    email: string;
+}
+
+interface FormValues extends User {}
+
+const UserProfilePage: React.FC = () => {
+    const [user, setUser] = useState<User | null>(null);
+    const { register, handleSubmit, reset } = useForm<FormValues>();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -13,7 +23,7 @@ const UserProfilePage = () => {
         const fetchUser = async () => {
             const token = localStorage.getItem('jwtToken'); // Use stored JWT token
             try {
-                const response = await axios.get(`/api/v1.0/users/self`, {
+                const response = await axios.get<User>(`/api/v1.0/users/self`, {
                     headers: { 'Authorization': `Bearer ${token}` } // Pass token for auth
                 });
                 setUser(response.data);
@@ -27,7 +37,7 @@ const UserProfilePage = () => {
         fetchUser();
     }, [reset]);
 
-    const onSubmit = async (data) => {
+    const onSubmit: SubmitHandler<FormValues> = async (data) => {
         try {
             const token = localStorage.getItem('jwtToken');
             await axios.post(`/api/v1.0/users/self`, data, {

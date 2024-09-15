@@ -1,22 +1,30 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './AdminPage.css';
 
-const AdminPage = () => {
-    const [users, setUsers] = useState([]);  // List of users
-    const [selectedUser, setSelectedUser] = useState(null);  // User being edited
-    const [isEditMode, setIsEditMode] = useState(false);  // Edit mode flag
+// Define types for User and component state
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    active: boolean;
+}
+
+const AdminPage: React.FC = () => {
+    const [users, setUsers] = useState<User[]>([]); // List of users
+    const [selectedUser, setSelectedUser] = useState<User | null>(null); // User being edited
+    const [isEditMode, setIsEditMode] = useState<boolean>(false); // Edit mode flag
 
     // Fetch users when the component is mounted
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const response = await axios.get('/api/v1.0/users', {
+                const response = await axios.get<User[]>('/api/v1.0/users', {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem('jwtToken')}`,
                     },
                 });
-                setUsers(response.data);  // Set users data
+                setUsers(response.data); // Set users data
             } catch (error) {
                 console.error('Failed to fetch users:', error);
             }
@@ -25,13 +33,14 @@ const AdminPage = () => {
     }, []);
 
     // Handle edit button click
-    const handleEdit = (user) => {
+    const handleEdit = (user: User) => {
         setSelectedUser(user);
         setIsEditMode(true);
     };
 
     // Handle saving the updated user information
     const handleSave = async () => {
+        if (!selectedUser) return; // Check if selectedUser is null
         try {
             await axios.put(`/api/v1.0/users/${selectedUser.id}`, selectedUser, {
                 headers: {
@@ -85,7 +94,7 @@ const AdminPage = () => {
                         <input
                             type="text"
                             value={selectedUser.name}
-                            onChange={(e) => setSelectedUser({...selectedUser, name: e.target.value})}
+                            onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
                         />
                     </label>
                     <label>
@@ -93,14 +102,14 @@ const AdminPage = () => {
                         <input
                             type="email"
                             value={selectedUser.email}
-                            onChange={(e) => setSelectedUser({...selectedUser, email: e.target.value})}
+                            onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
                         />
                     </label>
                     <label>
                         Status:
                         <select
                             value={selectedUser.active ? "true" : "false"}
-                            onChange={(e) => setSelectedUser({...selectedUser, active: e.target.value === 'true'})}
+                            onChange={(e) => setSelectedUser({ ...selectedUser, active: e.target.value === 'true' })}
                         >
                             <option value="true">Active</option>
                             <option value="false">Inactive</option>
