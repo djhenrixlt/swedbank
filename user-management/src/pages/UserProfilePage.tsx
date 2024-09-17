@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-
-// Define types for user data and form input
-interface User {
-    name: string;
-    lastName: string;
-    username: string;
-    email: string;
-}
+import { fetchUserProfile, updateUserProfile, deactivateUserAccount, User } from './authService'; // Import service functions
 
 interface FormValues extends User {}
 
@@ -19,15 +11,13 @@ const UserProfilePage: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch user data from API
+        // Fetch user data from API using service function
         const fetchUser = async () => {
-            const token = localStorage.getItem('jwtToken'); // Use stored JWT token
+            const token = localStorage.getItem('jwtToken'); // Get stored JWT token
             try {
-                const response = await axios.get<User>(`/api/v1.0/users/self`, {
-                    headers: { 'Authorization': `Bearer ${token}` } // Pass token for auth
-                });
-                setUser(response.data);
-                reset(response.data);
+                const userData = await fetchUserProfile(token);
+                setUser(userData);
+                reset(userData); // Set form values
             } catch (error) {
                 alert('Failed to fetch user data');
                 console.error(error);
@@ -40,9 +30,7 @@ const UserProfilePage: React.FC = () => {
     const onSubmit: SubmitHandler<FormValues> = async (data) => {
         try {
             const token = localStorage.getItem('jwtToken');
-            await axios.post(`/api/v1.0/users/self`, data, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+            await updateUserProfile(token, data);
             alert('Profile updated successfully');
         } catch (error) {
             alert('Failed to update profile');
@@ -51,12 +39,10 @@ const UserProfilePage: React.FC = () => {
     };
 
     const handleDeactivate = async () => {
-        if (window.confirm("Are you sure you want to deactivate your account?")) {
+        if (window.confirm('Are you sure you want to deactivate your account?')) {
             try {
                 const token = localStorage.getItem('jwtToken');
-                await axios.put(`/api/v1.0/users/self/deactivate`, {}, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                await deactivateUserAccount(token);
                 localStorage.removeItem('jwtToken'); // Remove JWT token
                 navigate('/login');
                 alert('Account deactivated');

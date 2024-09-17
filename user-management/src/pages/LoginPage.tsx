@@ -1,46 +1,48 @@
 import React, { useState, FormEvent } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
+import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
-
-// Define types for component state
-interface AuthResponse {
-    accessToken: string;
-}
+import { loginUser } from './authService'; // Import the loginUser function from authService
 
 const LoginPage: React.FC = () => {
-    const [login, setLogin] = useState<string>(''); // This will hold either email or username
+    const [login, setLogin] = useState<string>(''); // For email or username
     const [password, setPassword] = useState<string>('');
-    const [error, setError] = useState<string>('');
-    const navigate = useNavigate(); // Initialize useNavigate hook
+    const [error, setError] = useState<string>(''); // To store error messages
+    const [loading, setLoading] = useState<boolean>(false); // To handle loading state
+    const navigate = useNavigate(); // Hook to navigate between routes
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
+        e.preventDefault(); // Prevent the default form submission behavior
+        setLoading(true); // Set loading state to true when form is submitted
+
         try {
-            // Adjust request payload to send login (username or email) and password
-            const response = await axios.post<AuthResponse>('/api/v1.0/login', { login, password });
+            // Use the loginUser function from authService to send login request
+            const response = await loginUser(login, password);
 
-            // Store the token in localStorage
-            localStorage.setItem('jwtToken', response.data.accessToken);
+            // If login is successful, store the JWT token
+            localStorage.setItem('jwtToken', response.accessToken);
 
-            // Redirect to the dashboard page upon successful login
+            // Redirect the user to the dashboard page
             navigate('/dashboard');
-        } catch (error) {
-            setError('Invalid username or email, or password'); // Adjusted error message
+        } catch (error: any) {
+            // Set an error message if the login fails
+            setError('Invalid username, email, or password.');
+        } finally {
+            // Reset the loading state after the request completes
+            setLoading(false);
         }
     };
 
     return (
         <div className="login-page">
             <h1>Login</h1>
-            {error && <div className="error">{error}</div>}
+            {error && <div className="error">{error}</div>} {/* Display error if any */}
             <form onSubmit={handleSubmit}>
                 <label>
                     Username or Email:
                     <input
-                        type="text" // Changed to text to accept both username and email
+                        type="text"
                         value={login}
-                        onChange={(e) => setLogin(e.target.value)}
+                        onChange={(e) => setLogin(e.target.value)} // Update login state
                         required
                     />
                 </label>
@@ -49,11 +51,13 @@ const LoginPage: React.FC = () => {
                     <input
                         type="password"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => setPassword(e.target.value)} // Update password state
                         required
                     />
                 </label>
-                <button type="submit">Login</button>
+                <button type="submit" disabled={loading}>
+                    {loading ? 'Logging in...' : 'Login'} {/* Button label changes on loading */}
+                </button>
             </form>
         </div>
     );

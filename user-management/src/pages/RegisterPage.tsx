@@ -1,39 +1,28 @@
 import React from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './RegisterPage.css'; // Assuming this CSS file is present
-
-interface RegisterFormData {
-    name: string;
-    lastName: string;
-    username: string;
-    email: string;
-    password: string;
-}
+import './RegisterPage.css';
+import { registerUser, User } from './authService'; // Import registerUser from authService
 
 const RegisterPage: React.FC = () => {
-    const { register, handleSubmit, formState: { errors } } = useForm<RegisterFormData>();
+    const { register, handleSubmit, formState: { errors } } = useForm<User>();
     const navigate = useNavigate();
 
-    const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
+    // The form submit handler
+    const onSubmit: SubmitHandler<User> = async (data) => {
         try {
-            const response = await axios.post('/api/v1.0/signup', data, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-            if (response.status === 201) {
-                navigate('/login'); // Redirect to login page after successful registration
-            }
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                // TypeScript can recognize AxiosError
-                console.error("Backend responded with status", error.response?.status, ":", error.response?.data);
-                alert(`Registration failed: ${error.response?.data || error.message}`);
+            // Use the registerUser function to send data to the backend
+            await registerUser(data);
+            navigate('/login'); // Redirect to login page after successful registration
+        } catch (error: any) {
+            if (error.response) {
+                // Handle backend errors (such as validation issues)
+                console.error("Backend responded with status", error.response.status, ":", error.response.data);
+                alert(`Registration failed: ${error.response.data || error.message}`);
             } else {
+                // Handle unexpected errors
                 console.error("Unexpected error:", error);
-                alert(`Registration failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                alert(`Registration failed: ${error.message || 'Unknown error'}`);
             }
         }
     };
