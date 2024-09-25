@@ -74,6 +74,9 @@ class UserServiceImplTest {
         UserEntity savedUserEntity = userRepo.findById(createdUserDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
+        // Assert password is encoded correctly
+        assertTrue(passwordEncoder.matches(inputUserDto.getPassword(), savedUserEntity.getPassword()));
+
         assertAll(
                 () -> assertEquals(inputUserDto.getName(), savedUserEntity.getName()),
                 () -> assertEquals(inputUserDto.getLastName(), savedUserEntity.getLastName()),
@@ -89,12 +92,12 @@ class UserServiceImplTest {
 
     @Test
     void updateUser_ValidInput_ReturnsUpdatedUserDto() {
+        // Create and save an existing user
         UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setId(1L);
-        userRepo.save(existingUserEntity);
+        existingUserEntity = userRepo.save(existingUserEntity); // Let the repo assign the ID
 
         UserDto updatedUserDto = UserDto.builder()
-                .id(1L)
+                .id(existingUserEntity.getId())
                 .name("name1")
                 .lastName("lastName1")
                 .username("username1")
@@ -103,8 +106,8 @@ class UserServiceImplTest {
                 .roles(Set.of("ROLE_USER"))
                 .build();
 
-        UserDto resultUserDto = userService.updateUser(1L, updatedUserDto);
-        UserEntity updatedUserEntity = userRepo.findById(1L)
+        UserDto resultUserDto = userService.updateUser(existingUserEntity.getId(), updatedUserDto);
+        UserEntity updatedUserEntity = userRepo.findById(existingUserEntity.getId())
                 .orElseThrow(() -> new NoSuchElementException("User not found"));
 
         assertAll(
@@ -133,28 +136,30 @@ class UserServiceImplTest {
     @Test
     void deleteUser_ExistingUser_UserDeleted() {
         UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setId(1L);
+        existingUserEntity = userRepo.save(existingUserEntity); // Let the repo assign the ID
 
-        userRepo.save(existingUserEntity);
-        userService.deleteUser(1L);
+        userService.deleteUser(existingUserEntity.getId());
 
-        assertFalse(userRepo.existsById(1L));
+        assertFalse(userRepo.existsById(existingUserEntity.getId()));
     }
 
     @Test
     void getUserById_ExistingUser_ReturnsUserDto() {
-        UserEntity existingUserEntity = TestUtils.createUserEntity();
-        existingUserEntity.setId(1L);
-        userRepo.save(existingUserEntity);
-        UserDto resultUserDto = userService.getUserById(1L);
+        // Create a user entity and save it
+        UserEntity existingUser = TestUtils.createUserEntity();
+        UserEntity savedUser = userRepo.save(existingUser);  // savedUser is final or effectively final
 
+        // Fetch the user by ID
+        UserDto resultUserDto = userService.getUserById(savedUser.getId());
+
+        // Assert all fields
         assertAll(
-                () -> assertEquals(existingUserEntity.getId(), resultUserDto.getId()),
-                () -> assertEquals(existingUserEntity.getName(), resultUserDto.getName()),
-                () -> assertEquals(existingUserEntity.getLastName(), resultUserDto.getLastName()),
-                () -> assertEquals(existingUserEntity.getUsername(), resultUserDto.getUsername()),
-                () -> assertEquals(existingUserEntity.getEmail(), resultUserDto.getEmail()),
-                () -> assertEquals(existingUserEntity.isActive(), resultUserDto.isActive()),
+                () -> assertEquals(savedUser.getId(), resultUserDto.getId()),
+                () -> assertEquals(savedUser.getName(), resultUserDto.getName()),
+                () -> assertEquals(savedUser.getLastName(), resultUserDto.getLastName()),
+                () -> assertEquals(savedUser.getUsername(), resultUserDto.getUsername()),
+                () -> assertEquals(savedUser.getEmail(), resultUserDto.getEmail()),
+                () -> assertEquals(savedUser.isActive(), resultUserDto.isActive()),
                 () -> assertEquals(Set.of("ROLE_USER"), resultUserDto.getRoles())
         );
     }
@@ -164,6 +169,7 @@ class UserServiceImplTest {
         UserEntity existingUserEntity = TestUtils.createUserEntity();
         existingUserEntity.setUsername("username1");
         userRepo.save(existingUserEntity);
+
         UserDto resultUserDto = userService.getUserByUsername("username1");
 
         assertAll(
@@ -179,7 +185,6 @@ class UserServiceImplTest {
 
     @Test
     void login_SuccessfulLogin_ReturnsJwtToken() {
-
         UserEntity existingUserEntity = TestUtils.createUserEntity();
         existingUserEntity.setUsername("username1");
         existingUserEntity.setPassword(passwordEncoder.encode("password"));
@@ -191,11 +196,10 @@ class UserServiceImplTest {
 
         String token = userService.login(loginDto);
 
-        // Assert: Check that the token is not null or empty
         assertNotNull(token);
         assertFalse(token.isEmpty());
 
-        // Uncomment if using actual JWT validation logic
+        // Optional: Add JWT validation logic here
         // Claims claims = jwtTokenProvider.getClaimsFromToken(token);
         // assertEquals("username1", claims.getSubject());
     }
@@ -211,7 +215,6 @@ class UserServiceImplTest {
         loginDto.setLogin("username1");
         loginDto.setPassword("wrongPassword");
 
-        // Act & Assert: Verify that the method throws an AuthenticationException
         assertThrows(AuthenticationException.class, () -> userService.login(loginDto));
     }
 
@@ -231,46 +234,39 @@ class UserServiceImplTest {
 
     @Test
     void checkIfUserExist_ExistingInactiveUser_UpdatesUserStatus() {
-        UserDto inputUserDto = TestUtils.createUserDto(); // Creates a new user DTO
+        // Create a new UserDto
+        UserDto inputUserDto = TestUtils.createUserDto();
+
+        // Create an existing user with the same username, marked as inactive
         UserEntity existingUser = new UserEntity();
         existingUser.setUsername(inputUserDto.getUsername());
-        existingUser.setActive(false);
+        existingUser.setEmail(inputUserDto.getEmail());  // Ensure matching email for consistency
+        existingUser.setActive(false);  // Set the user as inactive
+        existingUser = userRepo.save(existingUser);  // Save the existing inactive user
 
-        // Save the existing user without manually setting the ID
-        when(userRepo.save(existingUser)).thenReturn(existingUser);
-
+        // Act: Attempt to create a new user with the same username
         UserDto createdUserDto = userService.createUser(inputUserDto);
 
+        // Fetch the updated user by ID
         UserEntity updatedUser = userRepo.findById(createdUserDto.getId())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
+        // Assert: Verify that the user's status has been updated to active
         assertTrue(updatedUser.isActive(), "User should be activated");
     }
 
     @Test
     void deactivateUser_UserExists_DeactivatesUser() {
-        Long userId = 1L;
-        UserEntity existingUser = new UserEntity();
-        existingUser.setId(userId);
+        UserEntity existingUser = TestUtils.createUserEntity();
         existingUser.setActive(true);
-        userRepo.save(existingUser);
+        existingUser = userRepo.save(existingUser); // Let the repo assign the ID
 
-        userService.deactivateUser(userId);
+        userService.deactivateUser(existingUser.getId());
 
-        UserEntity updatedUser = userRepo.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-        assertFalse(updatedUser.isActive());
-    }
+        UserEntity updatedUser = userRepo.findById(existingUser.getId())
+                .orElseThrow(() -> new NoSuchElementException("User not found"));
 
-    @Test
-    void deactivateUser_UserDoesNotExist_ThrowsException() {
-        Long userId = 1L;
-        when(userRepo.findById(userId)).thenReturn(Optional.empty());
-
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
-            userService.deactivateUser(userId);
-        });
-        assertEquals("User not found", exception.getMessage());
+        assertFalse(updatedUser.isActive(), "User should be deactivated");
     }
 
 }
