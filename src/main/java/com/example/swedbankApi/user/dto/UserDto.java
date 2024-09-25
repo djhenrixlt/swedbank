@@ -2,19 +2,21 @@ package com.example.swedbankApi.user.dto;
 
 import lombok.*;
 
-@Builder
-@AllArgsConstructor
+import java.util.Set;
+
+@Builder(toBuilder = true)
 @Getter
 @Setter
-@Value
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDto {
 
-    long id;
-    String name;
-    String lastName;
-    String nickName;
-    String password;
-    String email;
-    boolean admin;
-    boolean active;
+   private long id;
+   private String name;
+   private String lastName;
+   private String username;
+   private String password;
+   private String email;
+   private boolean active;
+   private Set<String> roles;
 }
